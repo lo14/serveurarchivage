@@ -1,1 +1,23 @@
-mettre code ici
+while read option 
+do
+  if [ "$option" = "list" ] 
+  then
+	  for i in $( ls ./archives ) #on va tester chaque fichier qui est dans le répertoie dédier aux archives
+	  do 
+		  debut_header=$(head -1 "./archives/$i" | cut -f1 -d ':') 
+		  #extrait du fichier testé la zone ou se trouve le numero du début du header (3:18)
+		  
+		  if [ "$debut_header" = "$(echo $debut_header | sed -n '/^[0-9]\+$/p')" ] 
+		  #si début_header est un nombre on continue sinon c'est pas la peine
+		  then
+		  
+			  if [ "$(sed -n "$debut_header"p "./archives/$i" | cut -f1 -d ' ')" = "directory" ] #
+			  #si la ligne n° début_header commence par le mot directory on continue
+			  then 
+				  echo "$i"       #on affiche le fichier qui est forcement une archive
+			  fi
+			  
+		  fi
+	  done
+  fi
+done 
