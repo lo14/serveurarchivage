@@ -1,1 +1,2 @@
-code ici
+path ="/"
+echo $path
