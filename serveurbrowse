@@ -1,1 +1,27 @@
-mettre code ici
+while read option
+do
+	if [ "$option" = "browse" ]
+	then	
+		commande=ok	#commande1 prend juste une valeur différente de exit pour rentrer dans la boucle suivante
+		
+		while [ "$commande" != "exit" ]
+		do	
+			echo "vsh:"
+			read commande 		#lit se qui va être tappé sur l'écran du client connecté au serveur
+			
+			commande1=`echo $commande | cut -f1 -d ' '` 
+			#on isole le premier mot de la commande tappé par le client au cas ou il mette des option (cd ./A1)
+
+			if [ "$commande1" = "ls" ] #utiliser un système de case ...
+			then
+				...
+			elif [ "$commande" = "exit" ]
+			then
+				...
+			else 
+				echo "la commande n existe pas"
+			fi
+			
+		done
+	fi
+done
