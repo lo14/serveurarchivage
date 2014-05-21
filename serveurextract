@@ -1,4 +1,4 @@
- GNU nano 2.0.6                                         File: extract                                                                                         
+  GNU nano 2.0.6                                           File: extract                                                                                              
 
 #while read option
 #do
@@ -11,7 +11,13 @@
                 for i in $(head -$fin_header archive | tail -$[$fin_header] | grep directory | sed 's/^directory \(.*\)$/.\/\1/g')
                 do
                         echo $i
-                        mkdir -p "$i"
+#                       mkdir -p "$i"
+                        #piste 1 :for n in $(cat archive | sed -n '/$i/,/@/p')
+                        #piste 2 :for ((n=$(sed -n "[$(sed -n '/$i/=' archive)+1] p" archive ;n=$(sed -n "[$(sed -n '/@/=' archive)+1] p" archive)+1]  ;i++))
+                        for n in $(cat archive | sed 's/$i\n\([^@*]\)@)/\1/g')
+                        do
+                                echo $n
+                        done
                 done
 
 
@@ -19,6 +25,5 @@
 #               done
 #       fi
 #done
-
 
 
