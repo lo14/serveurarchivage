@@ -1,8 +1,24 @@
-while read option
-do
-	if [ "$option" = "extract" ]
-	then	
-		
-		done
-	fi
-done
+ GNU nano 2.0.6                                         File: extract                                                                                         
+
+#while read option
+#do
+#       if [ "$option" = "extract" ]
+#       then
+         debut_header=$(head -1 "archive" | cut -f1 -d ':')
+         fin_header=$(head -1 "archive" | cut -f2 -d ':')
+         echo $debut_header
+         echo $fin_header
+                for i in $(head -$fin_header archive | tail -$[$fin_header] | grep directory | sed 's/^directory \(.*\)$/.\/\1/g')
+                do
+                        echo $i
+                        mkdir -p "$i"
+                done
+
+
+
+#               done
+#       fi
+#done
+
+
+
