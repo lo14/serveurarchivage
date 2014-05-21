@@ -1,1 +1,8 @@
-mettre code ici
+while read option
+do
+	if [ "$option" = "extract" ]
+	then	
+		
+		done
+	fi
+done
