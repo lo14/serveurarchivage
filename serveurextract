@@ -3,6 +3,12 @@
 #do
 #       if [ "$option" = "extract" ]
 #       then
+        
+
+#while read option
+#do
+# if [ "$option" = "extract" ]
+# then
          debut_header=$(head -1 "archive" | cut -f1 -d ':')
          fin_header=$(head -1 "archive" | cut -f2 -d ':')
          echo $debut_header
@@ -18,15 +24,20 @@
                         #echo $compteur
                         posf=$[$(grep -n "@" archive | head -$compteur | tail -1 | sed 's/^\([0-9]*\):@$/\1/g')-1]
                         #echo $posf
-                        IFS=""
+                        oldIFS=$IFS
+                        IFS=$'\n'
                         for n in $(sed -n ""$posd","$posf"p" archive)
                         do
                                 echo "$n"
+                                #echo "$n" | cut -d' ' -f 2 | sed 's/\([d-]\).*$/\1/g'
+                                if [ "$(echo "$n" | cut -d' ' -f 2 | sed 's/\([d-]\).*$/\1/g')" = "-" ]
+                                        then touch "./$i/$(echo "$n" | cut -d' ' -f 1)"
+                                        else echo 0
+                                fi
                         done
-                IFS=" "
+                IFS=$oldIFS
 
                 done
-
 
 
 #               done
