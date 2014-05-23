@@ -1,4 +1,3 @@
-
 #while read option
 #do
 # if [ "$option" = "extract" ]
@@ -26,6 +25,11 @@
                                 #echo "$n" | cut -d' ' -f 2 | sed 's/\([d-]\).*$/\1/g'
                                 if [ "$(echo "$n" | cut -d' ' -f 2 | sed 's/\([d-]\).*$/\1/g')" = "-" ]
                                         then touch "./$i/$(echo "$n" | cut -d' ' -f 1)"
+                                             debfich=$[$(echo "$n" | cut -d' ' -f 4)+$fin_header]
+                                             echo $debfich
+                                             finfich=$[$(echo "$n" | cut -d' ' -f 5)+$debfich-1]
+                                             echo $finfich
+                                             sed -n ""$debfich","$finfich"p" archive > "./$i/$(echo "$n" | cut -d' ' -f 1)"
                                         else echo 0
                                 fi
                         done
