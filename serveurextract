@@ -1,12 +1,6 @@
 
 #while read option
 #do
-#       if [ "$option" = "extract" ]
-#       then
-        
-
-#while read option
-#do
 # if [ "$option" = "extract" ]
 # then
          debut_header=$(head -1 "archive" | cut -f1 -d ':')
