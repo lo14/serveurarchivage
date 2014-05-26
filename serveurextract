@@ -1,25 +1,24 @@
-#while read option
-#do
-# if [ "$option" = "extract" ]
-# then
-         debut_header=$(head -1 "archive" | cut -f1 -d ':')
-         fin_header=$(head -1 "archive" | cut -f2 -d ':')
+if [ "$option" = "extract" ]
+ then
+        archive="$1"
+         debut_header=$(head -1 "$archive" | cut -f1 -d ':')
+         fin_header=$(head -1 "$archive" | cut -f2 -d ':')
          echo $debut_header
          echo $fin_header
          compteur=0
-                for i in $(head -$fin_header archive | tail -$[$fin_header] | grep directory | sed 's/^directory \(.*\)$/\1/g')
+                for i in $(head -$fin_header $archive | tail -$[$fin_header] | grep directory | sed 's/^directory \(.*\)$/\1/g')
                 do
                         echo "./$i"
                         mkdir -p "./$i"
                         compteur=$(($compteur + 1))
-                        posd=$[$(grep -n "$i$" archive | sed 's/^\([0-9]*\):.*$/\1/g')+1]
+                        posd=$[$(grep -n "$i$" $archive | sed 's/^\([0-9]*\):.*$/\1/g')+1]
                         #echo $posd
                         #echo $compteur
-                        posf=$[$(grep -n "@" archive | head -$compteur | tail -1 | sed 's/^\([0-9]*\):@$/\1/g')-1]
+                        posf=$[$(grep -n "@" $archive | head -$compteur | tail -1 | sed 's/^\([0-9]*\):@$/\1/g')-1]
                         #echo $posf
                         oldIFS=$IFS
                         IFS=$'\n'
-                        for n in $(sed -n ""$posd","$posf"p" archive)
+                        for n in $(sed -n ""$posd","$posf"p" $archive)
                         do
                                 echo "$n"
                                 #echo "$n" | cut -d' ' -f 2 | sed 's/\([d-]\).*$/\1/g'
@@ -29,7 +28,7 @@
                                              echo $debfich
                                              finfich=$[$(echo "$n" | cut -d' ' -f 5)+$debfich-1]
                                              echo $finfich
-                                             sed -n ""$debfich","$finfich"p" archive > "./$i/$(echo "$n" | cut -d' ' -f 1)"
+                                             sed -n ""$debfich","$finfich"p" $archive > "./$i/$(echo "$n" | cut -d' ' -f 1)"
                                         else echo 0
                                 fi
                         done
@@ -38,6 +37,5 @@
                 done
 
 
-#               done
-#       fi
-#done
+
+       fi
