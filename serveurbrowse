@@ -1,27 +1,53 @@
 while read option
 do
-	if [ "$option" = "browse" ]
-	then	
-		commande=ok	#commande prend juste une valeur différente de exit pour rentrer dans la boucle suivante
-		
-		while [ "$commande" != "exit" ]
-		do	
-			echo "vsh:"
-			read commande 		#lit se qui va être tappé sur l'écran du client connecté au serveur
-			
-			commande1=`echo $commande | cut -f1 -d ' '` 
-			#on isole le premier mot de la commande tappé par le client au cas ou il mette des option (cd ./A1)
+# PARTIE BROWSE ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+if [ "$option" = "browse" ]
+then	
+	read archive
+	#on test si l'archive existe
+	if [ "$archive" = "$(ls ./archives | sed -n '/^'"$archive"'$'/p)" ]	
+	then
+		debut_header1=$(head -1 "./archives/$archive" | cut -f1 -d ':')
+        	if [ "$debut_header1" = "$(echo $debut_header1 | sed -n '/^[0-9]\+$/p')" ] 
+		then
+			if [ "directory" = "$(sed -n "$debut_header1"p "./archives/$archive" | cut -f1 -d ' ')" ]
+        		then
+				echo "$archive est une archive"          
+	
+				position=/
+				position_theo=$position
+				commande=no
+				while [ "$commande" != "exit" ]
+				do	
+				#	echo "vsh:"
+					read commande
+					commande1=`echo $commande | cut -f1 -d ' '`  
 
-			if [ "$commande1" = "ls" ] #utiliser un système de case ...
-			then
-				...
-			elif [ "$commande" = "exit" ]
-			then
-				...
+
+
+					if [ "$commande1" = "cd"]
+					then
+						...
+					elif [ "$commande" = "ls" ]
+					then
+						...
+					elif [ "$commande" = "exit" ]
+					then	
+						...
+					else 
+						echo "le commande n'existe pas"
+					fi
+				done
 			else 
-				echo "la commande n existe pas"
+				echo "$archive n est pas une archive"
+				pkill -9 nc 
+				nc -l -k 3333 < FIFO | bash server.sh > FIFO
 			fi
-			
-		done
+		fi
+	else 
+		echo "$archive n existe pas"
+		pkill -9 nc
+		nc -l -k 3333 < FIFO | bash server.sh > FIFO
 	fi
+fi
 done
