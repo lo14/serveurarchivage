@@ -1,0 +1,29 @@
+function browse_client {
+echo "browse"
+read -p "entrer nom de l'archive : " archive1
+echo $archive1
+texte=ok
+while [ "$texte" != "exit" ]
+do 
+    #sleep 0.1
+	#read -p "vsh :>" texte
+	read texte
+	echo $texte
+done
+#sleep 0.1
+}
+
+
+
+if [ "$1" = "-list" ] 
+then
+	# l'option -q permet de fermer le client netcat uniquement quand celui ci lira le EOF du fichier FIFO du serveur
+	echo "list" | nc -q 1 $2 $3
+fi
+
+if [ "$1" = "-browse" ]
+then 
+	mkfifo FIFOtmp	
+	browse_client > FIFOtmp | nc $2 $3 < FIFOtmp
+	rm FIFOtmp
+fi
