@@ -1,1 +1,122 @@
-code ici
+function cd_archive {
+# extrait le premier mot du chemin
+premier=$(echo $chemin | sed 's/^\/\?\([^/]*\).*/\1/g')
+echo "premier est : $premier"
+# si le premier mot est .. alors
+if [ "$premier" = "$(echo $premier | sed -n '/^\.\.$/p')" ]
+then
+	# si position etait egual a / alors on ne peut pas appliquer le ..
+        if [ "$position_theo" != "/" ]
+        then
+		# si position_theo contient un pas de chemin derriere le / (ex : /A ou /E)
+		if [ "$position_theo" = "$(echo $position_theo | sed -n '/^\/[^/]\+$/p')" ]
+		then
+			position_theo=/
+		else
+	        	# enleve le dernier mot de position_theo
+                	position_theo=$(echo $position_theo | sed 's/^\(\/.*\)\/.\+$/\1/g')
+        	fi
+	fi
+	
+        # on enleve le premier mot de chemin
+        chemin=$(echo $chemin | sed 's/^\/\?[^/]\+\(.*\)/\1/g')
+        echo "chemin plus court : $chemin"
+
+        # si le chemin n'est pas terminé alors, -n "$chemin" est ok si "chemin" non nul
+        if [ "$chemin" != "/" -a -n "$chemin" ]
+        then
+	        echo "on relance cd"
+		cd_archive
+        else
+                position=$position_theo
+                echo $position
+        fi
+#si c'est le premier mot est . alors
+elif [ "$premier" = "$(echo $premier | sed -n '/\.$/p')" ]
+then
+
+	# on enleve le premier mot de chemin
+	chemin=$(echo $chemin | sed 's/^\/\?[^/]\+\(.*\)/\1/g')
+	echo "chemin plus court : $chemin"
+
+	# si le chemin n'est pas terminé alors, -n "$chemin" est ok si "chemin" non nul
+	if [ "$chemin" != "/" -a -n "$chemin" ]
+	then
+		echo "on relance cd"
+	        cd_archive
+	else
+	        position=$position_theo
+	        echo $position
+	fi
+
+#si le premier mot est autre chose que .. ou . alors
+else
+	#dans cette boucle on concatène position_theo et premier et on regarde si le chemin formé existe dans l'archive
+        if [ "$position_theo" = "/" ]
+        then
+		 recherche_archive=$(sed -n '/^directory .*\'"$position_theo"''"$premier"'$/p' ./archives/arch)
+        else
+                 recherche_archive=$(sed -n '/^directory .*\'"$position_theo"'\/'"$premier"'$/p' ./archives/arch)
+        fi
+	echo $recherche_archive
+	
+	#si on a trouvé le chemin dans l'archive alors
+        if [ -n "$recherche_archive" ]
+        then
+		#on ajoute premier à la fin de position_theo pour former le chemin actuel
+        	if [ "$position_theo" = "/" ]
+	        then
+	                position_theo=$position_theo$premier
+                else
+                        position_theo=$position_theo/$premier
+                fi
+ 	
+		#on eleve le premier mot du chemin
+                chemin=$(echo $chemin | sed 's/^\/\?[^/]\+\(.*\)/\1/g')
+                echo "chemin plus court : $chemin"
+
+                # si le chemin n'est pas terminé alors, -n "$chemin" est ok si "chemin" non nul
+                if [ "$chemin" != "/" -a -n "$chemin" ]
+		then
+	                echo "on relance la boucle"
+			cd_archive
+                else
+                        position=$position_theo
+                        echo $position
+                fi
+	#le chemin n'existe pas dans l'archive
+	else 
+		echo "chemin non valide"	
+	
+	fi
+fi
+}
+
+
+# ligne dans la partie browse du serveur
+if [ "$commande1" = "cd" ]
+then
+	chemin=$(echo $commande | cut -f2 -d ' ')
+	echo "chemin : $chemin"
+			
+	if [ "$chemin" != "cd" ]
+	then 	
+		echo "il y a une option sur le cd"
+		if [ "$chemin" = "$(echo $chemin | sed -n '/^\/\.\..*/p')" ]
+		then
+			echo "chemin non valide"
+		elif [ "$chemin" = "$(echo $chemin | sed -n '/^\/$/p')" ]
+		then 
+			position=/
+			echo "position actuel : $position"
+		else 
+			echo "on lance la foncion"
+			# lancer la fonction ici
+			cd_archive
+		fi
+	else 
+		echo "il n'y a pas d'option sur le cd"
+		echo "position actuelle : $position"
+				
+	fi 
+fi
