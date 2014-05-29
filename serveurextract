@@ -1,14 +1,11 @@
-if [ "$option" = "extract" ]
- then
+# if [ "$option" = "extract" ]
+# then
         archive="$1"
          debut_header=$(head -1 "$archive" | cut -f1 -d ':')
          fin_header=$(head -1 "$archive" | cut -f2 -d ':')
-         echo $debut_header
-         echo $fin_header
          compteur=0
                 for i in $(head -$fin_header $archive | tail -$[$fin_header] | grep directory | sed 's/^directory \(.*\)$/\1/g')
                 do
-                        echo "./$i"
                         mkdir -p "./$i"
                         compteur=$(($compteur + 1))
                         posd=$[$(grep -n "$i$" $archive | sed 's/^\([0-9]*\):.*$/\1/g')+1]
@@ -20,15 +17,35 @@ if [ "$option" = "extract" ]
                         IFS=$'\n'
                         for n in $(sed -n ""$posd","$posf"p" $archive)
                         do
-                                echo "$n"
-                                #echo "$n" | cut -d' ' -f 2 | sed 's/\([d-]\).*$/\1/g'
                                 if [ "$(echo "$n" | cut -d' ' -f 2 | sed 's/\([d-]\).*$/\1/g')" = "-" ]
                                         then touch "./$i/$(echo "$n" | cut -d' ' -f 1)"
                                              debfich=$[$(echo "$n" | cut -d' ' -f 4)+$fin_header]
-                                             echo $debfich
                                              finfich=$[$(echo "$n" | cut -d' ' -f 5)+$debfich-1]
-                                             echo $finfich
                                              sed -n ""$debfich","$finfich"p" $archive > "./$i/$(echo "$n" | cut -d' ' -f 1)"
+                                             for h in $(echo $n | cut -d' ' -f 2 | sed 's/^-\(.*\)$/\1/g')
+                                                        do
+                                                                z=0
+                                                                mul=100
+                                                                for o in `seq 0 2`
+
+                                                                do
+                                                                u=0
+                                                                for p in `seq 0 2`
+                                                                do
+                                                                k=$[3*$o]
+                                                                j=$(echo ${h:$k:3})
+                                                                case $(echo $j | cut -c$[$p+1]) in
+                                                                 r ) u=$(($u + 4));;
+                                                                        w ) u=$(($u + 2));;
+                                                                        x ) u=$(($u + 1));;
+                                                                        -) u=$(($u + O))
+                                                                esac
+                                                                done
+                                                                z=$[$z + $u * $mul]
+                                                                mul=$(($mul / 10))
+                                                                done
+                                             done
+                                             chmod $z "./$i/$(echo "$n" | cut -d' ' -f 1)"
                                         else echo 0
                                 fi
                         done
@@ -38,4 +55,8 @@ if [ "$option" = "extract" ]
 
 
 
-       fi
+ #      fi
+
+
+
+
