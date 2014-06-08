@@ -1,53 +1,113 @@
-while read option
-do
 # PARTIE BROWSE ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 if [ "$option" = "browse" ]
 then	
 	read archive
-	#on test si l'archive existe
+	#on test si l'archive existe''''''''''''''''''''''''''''''''''''''''''''''
+	
+	# si le nom d'archive donné existe dans le répertoir des archives on continue
 	if [ "$archive" = "$(ls ./archives | sed -n '/^'"$archive"'$'/p)" ]	
 	then
+		# si le premier mot du header est directory alors c'est une archive
 		debut_header1=$(head -1 "./archives/$archive" | cut -f1 -d ':')
         	if [ "$debut_header1" = "$(echo $debut_header1 | sed -n '/^[0-9]\+$/p')" ] 
 		then
 			if [ "directory" = "$(sed -n "$debut_header1"p "./archives/$archive" | cut -f1 -d ' ')" ]
         		then
-				echo "$archive est une archive"          
-	
-				position=/
+			echo "$archive est une archive"          
+			
+			#la position actuelle avnt tout action de l'utilisateur est /
+			position=/
+			commande=ok
+			while [ "$commande" != "exit" ]
+			do	
+				echo "vsh:>"
+				read commande
+				#position_theo permet de vérifier si un chemin existe avant de modifier la vrai position
+				#place la position théorique au même endroit que la position réel
 				position_theo=$position
-				commande=no
-				while [ "$commande" != "exit" ]
-				do	
-				#	echo "vsh:"
-					read commande
-					commande1=`echo $commande | cut -f1 -d ' '`  
+				
+				# extrait la première partie de commande dans le cas ou il y a une option après ex : cd /A/A1 ne prend que le cd 
+				commande1=`echo $commande | cut -f1 -d ' '`  
+#______________________________________________
 
-
-
-					if [ "$commande1" = "cd"]
-					then
-						...
-					elif [ "$commande" = "ls" ]
-					then
-						...
-					elif [ "$commande" = "exit" ]
-					then	
-						...
-					else 
-						echo "le commande n'existe pas"
+#------------- PARTIE CD 
+		if [ "$commande1" = "cd" ]
+		then
+			# on récupère la deuxième partie de la commande donc le chemin pour un cd 
+			chemin=$(echo $commande | cut -f2 -d ' ')
+			
+			# si il n'y a rien d'érit après le cd (pas de chemin) chemin aura pris la valeur cd et non pas " " 
+			if [ "$chemin" != "cd" ]
+			then 	
+				# si le chemin commence par /.. 
+				if [ "$chemin" = "$(echo $chemin | sed -n '/^\/\.\..*/p')" ]
+				then
+					echo "chemin non valide"
+				# si le chemin est egual à / alors
+				elif [ "$chemin" = "$(echo $chemin | sed -n '/^\/$/p')" ]
+				then 
+					position=/
+				# sinon on lance le fonction de vérification du chemin
+				else 	
+					# si le chemin commence par un /
+					if [ "$(echo $chemin | sed 's/^\(.\).*$/\1/g')" = "/" ]
+					then 
+						#c'est un chemin absolue et pour ne pas avoir de problème de concaténation dans la focntion verif_chemin on met position theo à /
+						position_theo=/
 					fi
-				done
-			else 
-				echo "$archive n est pas une archive"
-				pkill -9 nc 
-				nc -l -k 3333 < FIFO | bash server.sh > FIFO
-			fi
+					# on lance la vérification du chemin
+					verif_chemin cd $archive
+				fi
+			fi  
+#--------------------Partie LS
+		elif [ "$commande1" = "ls" ]
+                then
+			chemin=$(echo $commande | cut -f2 -d ' ')
+                        if [ "$chemin" != "ls" ]
+                        then
+                                if [ "$chemin" = "$(echo $chemin | sed -n '/^\/\.\..*/p')" ]
+                                then
+	                                echo "chemin non valide"
+                                elif [ "$chemin" = "$(echo $chemin | sed -n '/^\/$/p')" ]
+                                then 
+                                        position_theo="/"
+                                        ls_archive $archive
+ 
+                                else 
+					if [ "$(echo $chemin | sed 's/^\(.\).*$/\1/g')" = "/" ]
+					then 
+						#c'est un chemin absolue
+						position_theo=/
+					fi
+                                        verif_chemin ls $archive
+                                fi
+			else
+				position_theo=$position
+				ls_archive $archive
+                        fi
+#----------------------Partie autre
+		elif [ "$commande" = "exit" ]
+		then
+			echo "enrevoir"
+		elif [ "$commande" = "pwd" ]
+		then
+			echo $position 
+		else 
+
+			echo "la commande n existe pas"
+		fi
+#________________________________________________________________
+			done
+		else 
+			echo "$archive n est pas une archive"
+			pkill -9 nc 
+			nc -l -k 3333 < FIFO | bash server.sh > FIFO
+		fi
 		fi
 	else 
 		echo "$archive n existe pas"
 		pkill -9 nc
 		nc -l -k 3333 < FIFO | bash server.sh > FIFO
+#		exit
 	fi
 fi
-done
