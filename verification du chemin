@@ -1,0 +1,111 @@
+function verif_chemin {
+# $1 = nom de la fonction a executer si le chemin est valide
+# $2 = nom de l'archive dans laquel on travail
+
+# extrait le premier mot du chemin ex : pour /A/A1 cela renvoie A
+premier=$(echo $chemin | sed 's/^\/\?\([^/]*\).*/\1/g')
+
+# si le premier mot est .. alors
+if [ "$premier" = "$(echo $premier | sed -n '/^\.\.$/p')" ]
+then
+	# si position_theo différent de / alors on peut appliquer le ..
+        if [ "$position_theo" != "/" ]
+        then
+		# si position_theo contient un seul / (ex : /A ou /B est ok ; /A/A1 ne marche pas)
+		if [ "$position_theo" = "$(echo $position_theo | sed -n '/^\/[^/]\+$/p')" ]
+		then	
+			# /A devient /
+			position_theo=/
+		else
+	        	# enleve le dernier mot de position_theo (ex /A/A1 devient /A)
+                	position_theo=$(echo $position_theo | sed 's/^\(\/.*\)\/.\+$/\1/g') # ATTENTION 
+        	fi
+	fi
+	
+        # on enleve le premier mot de chemin ex /A/A1 devient /A1
+        chemin=$(echo $chemin | sed 's/^\/\?[^/]\+\(.*\)/\1/g')
+
+        # si le chemin n'est pas terminé alors on relance la fonction
+        if [ "$chemin" != "/" -a -n "$chemin" ] # -n "$chemin" est ok si "chemin" non nul
+        then	
+		# on relance la fonction 
+		verif_chemin $1 $2
+        else	
+		# on appelle la fonctions a laquel s'appliquait le chemin qui est valide 
+		if [ "$1" = "cd" ]
+		then 
+			cd_archive	
+		elif [ "$1" = "ls" ]
+		then
+			ls_archive $2
+		fi
+        fi
+
+#si le premier mot est . alors la position theorique ne change pas
+elif [ "$premier" = "$(echo $premier | sed -n '/\.$/p')" ]
+then
+
+	# on enleve le premier mot de chemin
+	chemin=$(echo $chemin | sed 's/^\/\?[^/]\+\(.*\)/\1/g')
+
+	# si le chemin n'est pas terminé alors on relance la fonction
+	if [ "$chemin" != "/" -a -n "$chemin" ]
+	then
+	        verif_chemin $1 $2
+	else
+                if [ "$1" = "cd" ]
+                then 
+                         cd_archive      # <-------------les fonctions lancées
+                elif [ "$1" = "ls" ]
+		then
+			ls_archive $2 
+		fi
+
+	fi
+
+#si le premier mot est autre chose que .. ou . alors (donc que c'est du texte à chercher dans l'archive)
+else
+	#dans cette boucle on recherche le chemin formé par position_théo et le premier mot du chemin de l'utilisateur
+        if [ "$position_theo" = "/" ]
+        then
+		 recherche_archive=$(sed -n '/^directory .*\'"$position_theo"''"$premier"'$/p' ./archives/arch)
+        else
+                 recherche_archive=$(sed -n '/^directory .*\'"$position_theo"'\/'"$premier"'$/p' ./archives/arch)
+        fi
+	
+	#si on a trouvé le chemin exite dans l'archive alors
+        if [ -n "$recherche_archive" ]
+        then
+		#on ajoute premier à la fin de position_theo pour former le chemin actuel
+        	if [ "$position_theo" = "/" ]
+	        then
+	                position_theo=$position_theo$premier
+                else
+                        position_theo=$position_theo/$premier
+                fi
+ 	
+		#on eleve le premier mot du chemin
+                chemin=$(echo $chemin | sed 's/^\/\?[^/]\+\(.*\)/\1/g')
+
+                # si le chemin n'est pas terminé alors on relance
+                if [ "$chemin" != "/" -a -n "$chemin" ]
+		then
+			verif_chemin $1 $2
+                else
+                       	if [ "$1" = "cd" ]
+                      	then 
+				cd_archive      # <-------------les fonctions lancées
+			elif [ "$1" = "ls" ]
+			then
+				ls_archive $2
+                       	fi
+
+                fi
+
+	#sinon le chemin n'existe pas dans l'archive
+	else 
+		echo "chemin non valide"	
+	
+	fi
+fi
+}
