@@ -1,29 +1,69 @@
+#!/bin/bash
+
+#on a placé ce fichier executable aussi dans le répertoire
+# /usr/local/bin
+#cela permet au script vsh de s'executer meme si on ne se
+#trouve pas dans le répertoire ou il est crée
+
+#on au aussi utiliser la commande suivante pour permettre au script vsh de s'executer sans tapper bash devant : PATH=$PATH:/home/arhtur/L014/projet
+
+#_____________________________________________________________
 function browse_client {
+#$1 est le nom de l'archive
 echo "browse"
-read -p "entrer nom de l'archive : " archive1
-echo $archive1
+echo $1
 texte=ok
 while [ "$texte" != "exit" ]
-do 
-    #sleep 0.1
-	#read -p "vsh :>" texte
-	read texte
+do 	
+	#le sleep permet de laisser le temps au serveur d'envoyer sa reponse avant 		 l'afficher le "vsh :>" du read
+	sleep 0.1
+	read -p "vsh :>" texte
 	echo $texte
 done
-#sleep 0.1
 }
 
+#_______________________________________________________________
+function extract_client {
+#$1 est le nom de l'archive
+echo "extract"
+echo $1
+}
+#________________________________________________________________
 
-
-if [ "$1" = "-list" ] 
-then
-	# l'option -q permet de fermer le client netcat uniquement quand celui ci lira le EOF du fichier FIFO du serveur
-	echo "list" | nc -q 1 $2 $3
-fi
-
-if [ "$1" = "-browse" ]
+# test si le numero de port est le bon ou non
+if [ "$3" != "3333" ]
 then 
-	mkfifo FIFOtmp	
-	browse_client > FIFOtmp | nc $2 $3 < FIFOtmp
-	rm FIFOtmp
+	echo "erreur : le numéro sur lequel écoute le serveur d'archive est 3333"
+ 
+else
+	if [ "$1" = "-list" ] 
+	then
+		echo "list" | nc -q 1 $2 $3
+	
+	elif [ "$1" = "-browse" ]
+	then 
+		#test si l'argument indiquant l'archive existe
+		if [ -z "$4" ]
+		then 
+			echo "erreur : il manque l'archive"
+		else 
+			mkfifo FIFOtmp	
+			browse_client $4 > FIFOtmp | nc $2 $3 < FIFOtmp
+			rm FIFOtmp
+		fi
+
+	elif [ "$1" = "-extract" ]
+	then	
+		if [ -z "$4" ]
+		then 
+			echo "erreur : il manque l'archive"
+		else		
+			mkfifo FIFOtmp	
+			extract_client $4 > FIFOtmp | nc $2 $3 < FIFOtmp
+			rm FIFOtmp
+		fi	
+	else 
+		#l'erreur va etre envoyé par le serveur 
+		echo "$1" | nc $2 $3
+	fi	
 fi
