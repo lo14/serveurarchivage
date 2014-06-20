@@ -1,1 +1,34 @@
-code ici
+
+function remove_fich {
+
+echo "fich=$1"
+lifich=$(cat archive | grep -n $1 | cut -f1 -d ':')
+debf=$(grep "$1" archive | cut -f4 -d' ')
+finf=$(grep "$1" archive | cut -f5 -d' ')
+echo $lifich $debf $finf
+debf=$(( $debf+$posf ))
+finf=$(( $debf+$finf ))
+echo $debf $finf
+sed -i ""$debf","$finf" s/^.*$/ /"  archive
+sed -i "$lifich s/^.*$/ /"  archive
+}
+
+posd=$(cat archive | head -1 | tail -1 | cut -f1 -d:)
+posf=$(cat archive | head -1 | tail -1 | cut -f2 -d:)
+if [ "$(grep "^directory $1$" archive | cut -f2 -d " ")" = "$1" ]
+
+then
+        echo "cette fonction de fonctionne qu'avec un fichier"
+        return 0
+elif [ "$(grep "$(echo "$1" | awk -F"/" '{print $NF}')" archive | cut -f2 -d " " | cut -c1)" = "-" ]
+
+then
+        echo "fichier"
+        fich=$(echo "$1" | awk -F"/" '{print $NF}')
+        remove_fich $fich
+else echo "veuillez entrer un nom de fichier correct"
+fi
+
+
+
+
