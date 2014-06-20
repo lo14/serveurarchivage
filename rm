@@ -6,8 +6,8 @@ lifich=$(cat archive | grep -n $1 | cut -f1 -d ':') #met le numero de la ligne c
 debf=$(grep "$1" archive | cut -f4 -d' ') #met le numero de debut du contenu du fichier dans debf
 finf=$(grep "$1" archive | cut -f5 -d' ') #met le numero de la fin du contenu du fichier dans finf
 
-debf=$(( $debf+$posf )) #on ajoute le debut du contenu et le debut du fichier par rapport au contenu
-finf=$(( $debf+$finf )) #on ajoute le debut du contenu et la fin du fichier par rapport au contenu
+debf=$(( $debf+$posf-1 )) #on ajoute le debut du contenu et le debut du fichier par rapport au contenu
+finf=$(( $debf+$finf-1 )) #on ajoute le debut du contenu et la fin du fichier par rapport au contenu
 
 sed -i ""$debf","$finf" s/^.*$/ /"  archive #on remplace les lignes du contenu du fichier par des lignes blanches
 sed -i "$lifich s/^.*$/ /"  archive #on remplace la ligne du fichier dans le header par une ligne blanche
